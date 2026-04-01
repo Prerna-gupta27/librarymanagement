@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Fine ID</th>
+        <th>Issue ID</th>
+        <th>Member</th>
+        <th>Book</th>
+        <th>Accession</th>
+        <th>Assessed</th>
+        <th>Days Overdue</th>
+        <th>Amount</th>
+        <th>Paid?</th>
+        <th>Paid Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for f in fines %}
+        <tr>
+          <td>{{ f.fine_id }}</td>
+          <td>{{ f.issue_id }}</td>
+          <td>{{ f.full_name }}</td>
+          <td>{{ f.title }} by {{ f.author }}</td>
+          <td>{{ f.accession_no }}</td>
+          <td>{{ f.assessed_date }}</td>
+          <td>{{ f.days_overdue }}</td>
+          <td>{{ f.fine_amount }}</td>
+          <td>{{ 'YES' if f.is_paid else 'NO' }}</td>
+          <td>{{ f.paid_date or '' }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

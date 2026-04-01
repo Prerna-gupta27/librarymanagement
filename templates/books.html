@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+  <p class="small">Shows each book plus total/available copies.</p>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Book ID</th>
+        <th>Title</th>
+        <th>Author</th>
+        <th>Publisher</th>
+        <th>ISBN</th>
+        <th>Year</th>
+        <th>Total Copies</th>
+        <th>Available</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for b in books %}
+        <tr>
+          <td>{{ b.book_id }}</td>
+          <td>{{ b.title }}</td>
+          <td>{{ b.author }}</td>
+          <td>{{ b.publisher or '' }}</td>
+          <td>{{ b.isbn or '' }}</td>
+          <td>{{ b.published_year or '' }}</td>
+          <td>{{ b.total_copies }}</td>
+          <td>{{ b.available_copies }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

@@ -1,0 +1,13 @@
+body { font-family: system-ui, Arial, sans-serif; margin: 24px; }
+nav a { margin-right: 12px; }
+.container { max-width: 1000px; }
+.table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+.table th, .table td { border: 1px solid #ddd; padding: 8px; }
+.table th { background: #f5f5f5; text-align: left; }
+.form-row { margin: 10px 0; }
+input, select, textarea { width: 100%; padding: 8px; box-sizing: border-box; }
+button { padding: 8px 12px; }
+.flash { padding: 10px; margin: 10px 0; border: 1px solid #ddd; background: #fafafa; }
+.flash.error { border-color: #e99; background: #fff5f5; }
+.flash.success { border-color: #9e9; background: #f5fff5; }
+.small { color: #666; font-size: 0.9em; }

@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block content %}
+  <form method="post">
+    <div class="form-row">
+      <label>Member Type *</label>
+      <select name="member_type_id" required>
+        <option value="">-- Select --</option>
+        {% for t in member_types %}
+          <option value="{{ t.member_type_id }}" {% if form.member_type_id == (t.member_type_id|string) %}selected{% endif %}>
+            {{ t.type_name }} (max {{ t.max_active_issues }} books, {{ t.max_issue_days }} days)
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-row">
+      <label>Full Name *</label>
+      <input name="full_name" required value="{{ form.full_name or '' }}" />
+    </div>
+
+    <div class="form-row">
+      <label>Email</label>
+      <input name="email" type="email" value="{{ form.email or '' }}" />
+      <div class="small">Email must be unique if provided.</div>
+    </div>
+
+    <div class="form-row">
+      <label>Phone</label>
+      <input name="phone" value="{{ form.phone or '' }}" />
+    </div>
+
+    <button type="submit">Register</button>
+  </form>
+{% endblock %}

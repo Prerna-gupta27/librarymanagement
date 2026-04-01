@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+  <p class="small">Return by Issue ID. Fine is calculated as days_overdue × daily rate.</p>
+
+  <form method="post">
+    <div class="form-row">
+      <label>Issue ID *</label>
+      <input name="issue_id" type="number" min="1" required value="{{ form.issue_id or '' }}" />
+    </div>
+
+    <button type="submit">Return</button>
+  </form>
+
+  {% if result %}
+    <h2>Return Result</h2>
+    <table class="table">
+      <tr><th>Issue ID</th><td>{{ result.issue_id }}</td></tr>
+      <tr><th>Member</th><td>{{ result.member_name }}</td></tr>
+      <tr><th>Book Copy</th><td>{{ result.accession_no }} (Copy #{{ result.copy_id }})</td></tr>
+      <tr><th>Issue Date</th><td>{{ result.issue_date }}</td></tr>
+      <tr><th>Due Date</th><td>{{ result.due_date }}</td></tr>
+      <tr><th>Return Date</th><td>{{ result.return_date }}</td></tr>
+      <tr><th>Days Overdue</th><td>{{ result.days_overdue }}</td></tr>
+      <tr><th>Fine Amount</th><td>{{ result.fine_amount }}</td></tr>
+    </table>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ title or "Library Management System" }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <div class="container">
+    <h1>{{ title or "Library Management System" }}</h1>
+    <nav>
+      <a href="{{ url_for('books') }}">View Books</a>
+      <a href="{{ url_for('add_book') }}">Add New Book</a>
+      <a href="{{ url_for('register_member') }}">Register Member</a>
+      <a href="{{ url_for('issue_book') }}">Issue Book</a>
+      <a href="{{ url_for('return_book') }}">Return Book</a>
+      <a href="{{ url_for('view_fines') }}">View Fines</a>
+    </nav>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </div>
+</body>
+</html>

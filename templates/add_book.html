@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+  <form method="post">
+    <div class="form-row">
+      <label>Title *</label>
+      <input name="title" required value="{{ form.title or '' }}" />
+    </div>
+    <div class="form-row">
+      <label>Author *</label>
+      <input name="author" required value="{{ form.author or '' }}" />
+    </div>
+    <div class="form-row">
+      <label>Publisher</label>
+      <input name="publisher" value="{{ form.publisher or '' }}" />
+    </div>
+    <div class="form-row">
+      <label>ISBN</label>
+      <input name="isbn" value="{{ form.isbn or '' }}" />
+    </div>
+    <div class="form-row">
+      <label>Published Year</label>
+      <input name="published_year" type="number" min="0" value="{{ form.published_year or '' }}" />
+    </div>
+
+    <div class="form-row">
+      <label>Accession numbers (optional, one per line)</label>
+      <textarea name="accession_numbers" rows="4" placeholder="ACC-001\nACC-002">{{ form.accession_numbers or '' }}</textarea>
+      <div class="small">If you add copies here, they can be issued immediately.</div>
+    </div>
+
+    <button type="submit">Save</button>
+  </form>
+{% endblock %}
