@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block content %}
+  <section class="card">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">My Issues</p>
+        <h2>Currently Borrowed Books</h2>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Issue</th>
+            <th>Book</th>
+            <th>Copy</th>
+            <th>Issue Date</th>
+            <th>Due Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for i in active_issues %}
+            <tr>
+              <td>#{{ i.issue_id }}</td>
+              <td>{{ i.title }}<div class="small">{{ i.author }}</div></td>
+              <td>{{ i.accession_no }}</td>
+              <td>{{ i.issue_date }}</td>
+              <td>{{ i.due_date }}</td>
+              <td>
+                {% if i.is_overdue %}
+                  <span class="status-badge status-danger">Overdue {{ i.overdue_days }}d</span>
+                {% elif i.days_left <= 2 %}
+                  <span class="status-badge status-warn">Due in {{ i.days_left }}d</span>
+                {% else %}
+                  <span class="status-badge status-ok">{{ i.days_left }}d left</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="6"><div class="empty-state">No active issues found.</div></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">History</p>
+        <h2>Recent Issue History</h2>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Issue</th>
+            <th>Book</th>
+            <th>Copy</th>
+            <th>Issue Date</th>
+            <th>Due Date</th>
+            <th>Return Date</th>
+            <th>State</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for h in history_issues %}
+            <tr>
+              <td>#{{ h.issue_id }}</td>
+              <td>{{ h.title }}<div class="small">{{ h.author }}</div></td>
+              <td>{{ h.accession_no }}</td>
+              <td>{{ h.issue_date }}</td>
+              <td>{{ h.due_date }}</td>
+              <td>{{ h.return_date or '-' }}</td>
+              <td>
+                {% if h.return_date %}
+                  <span class="status-badge status-ok">Returned</span>
+                {% else %}
+                  <span class="status-badge status-warn">Open</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="7"><div class="empty-state">No issue history found.</div></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}

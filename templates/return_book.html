@@ -1,27 +1,92 @@
 {% extends 'base.html' %}
 {% block content %}
-  <p class="small">Return by Issue ID. Fine is calculated as days_overdue × daily rate.</p>
-
-  <form method="post">
-    <div class="form-row">
-      <label>Issue ID *</label>
-      <input name="issue_id" type="number" min="1" required value="{{ form.issue_id or '' }}" />
+  <section class="card">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Returns and Fine Assessment</p>
+        <h2>Process a Return</h2>
+      </div>
+      <a class="btn btn-muted" href="{{ url_for('active_issues') }}">Open Active Issues</a>
     </div>
 
-    <button type="submit">Return</button>
-  </form>
+    <p class="small">Fine is calculated as overdue days × daily rate. You can prefill this form from Live Issues.</p>
+
+    <form method="post" class="form-grid">
+      <div class="form-row">
+        <label>Issue ID *</label>
+        <input name="issue_id" type="number" min="1" required value="{{ form.issue_id or '' }}" />
+      </div>
+
+      <div class="form-row button-row">
+        <button class="btn btn-primary" type="submit">Complete Return</button>
+      </div>
+    </form>
+  </section>
 
   {% if result %}
-    <h2>Return Result</h2>
-    <table class="table">
-      <tr><th>Issue ID</th><td>{{ result.issue_id }}</td></tr>
-      <tr><th>Member</th><td>{{ result.member_name }}</td></tr>
-      <tr><th>Book Copy</th><td>{{ result.accession_no }} (Copy #{{ result.copy_id }})</td></tr>
-      <tr><th>Issue Date</th><td>{{ result.issue_date }}</td></tr>
-      <tr><th>Due Date</th><td>{{ result.due_date }}</td></tr>
-      <tr><th>Return Date</th><td>{{ result.return_date }}</td></tr>
-      <tr><th>Days Overdue</th><td>{{ result.days_overdue }}</td></tr>
-      <tr><th>Fine Amount</th><td>{{ result.fine_amount }}</td></tr>
-    </table>
+    <section class="card">
+      <div class="section-head">
+        <h2>Return Summary</h2>
+      </div>
+      <div class="table-wrap">
+        <table class="table compact-table">
+          <tbody>
+            <tr><th>Issue ID</th><td>#{{ result.issue_id }}</td></tr>
+            <tr><th>Member</th><td>{{ result.member_name }}</td></tr>
+            <tr><th>Book Copy</th><td>{{ result.accession_no }} (Copy #{{ result.copy_id }})</td></tr>
+            <tr><th>Issue Date</th><td>{{ result.issue_date }}</td></tr>
+            <tr><th>Due Date</th><td>{{ result.due_date }}</td></tr>
+            <tr><th>Return Date</th><td>{{ result.return_date }}</td></tr>
+            <tr><th>Days Overdue</th><td>{{ result.days_overdue }}</td></tr>
+            <tr><th>Fine Amount</th><td>{{ "%.2f"|format(result.fine_amount) }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
   {% endif %}
+
+  <section class="card">
+    <div class="section-head">
+      <h2>Recent Active Issues (Fast Lookup)</h2>
+    </div>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Issue</th>
+            <th>Member</th>
+            <th>Book / Copy</th>
+            <th>Due Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for i in active_issues %}
+            <tr>
+              <td>#{{ i.issue_id }}</td>
+              <td>{{ i.full_name }}</td>
+              <td>{{ i.title }}<div class="small">{{ i.accession_no }}</div></td>
+              <td>
+                {{ i.due_date }}
+                {% if i.is_overdue %}
+                  <span class="status-badge status-danger">Overdue {{ i.overdue_days }}d</span>
+                {% else %}
+                  <span class="status-badge status-ok">{{ i.days_left }}d left</span>
+                {% endif %}
+              </td>
+              <td>
+                <a class="btn btn-secondary" href="{{ url_for('return_book', issue_id=i.issue_id) }}">Load ID</a>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="5">
+                <div class="empty-state">No active issues found.</div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
 {% endblock %}

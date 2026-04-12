@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block content %}
+  <section class="card">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Live Circulation</p>
+        <h2>Active Issues Queue</h2>
+      </div>
+      <a class="btn btn-secondary" href="{{ url_for('issue_book') }}">Issue Another Book</a>
+    </div>
+
+    <div class="pill-stack">
+      <span class="chip">Active: {{ summary.active_total or 0 }}</span>
+      <span class="chip">Overdue: {{ summary.overdue_total or 0 }}</span>
+      <a class="filter-pill {% if status_filter == 'all' %}is-active{% endif %}" href="{{ url_for('active_issues', status='all') }}">All</a>
+      <a class="filter-pill {% if status_filter == 'overdue' %}is-active{% endif %}" href="{{ url_for('active_issues', status='overdue') }}">Overdue</a>
+      <a class="filter-pill {% if status_filter == 'due_soon' %}is-active{% endif %}" href="{{ url_for('active_issues', status='due_soon') }}">Due Soon (3d)</a>
+    </div>
+
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Issue</th>
+            <th>Member</th>
+            <th>Book</th>
+            <th>Copy</th>
+            <th>Issued</th>
+            <th>Due</th>
+            <th>State</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for i in issues %}
+            <tr>
+              <td>#{{ i.issue_id }}</td>
+              <td>#{{ i.member_id }} · {{ i.full_name }}<div class="small">{{ i.type_name }}</div></td>
+              <td>{{ i.title }}<div class="small">{{ i.author }}</div></td>
+              <td>{{ i.accession_no }} <div class="small">Copy #{{ i.copy_id }}</div></td>
+              <td>{{ i.issue_date }}</td>
+              <td>{{ i.due_date }}</td>
+              <td>
+                {% if i.is_overdue %}
+                  <span class="status-badge status-danger">Overdue {{ i.overdue_days }}d</span>
+                {% elif i.days_left <= 2 %}
+                  <span class="status-badge status-warn">Due in {{ i.days_left }}d</span>
+                {% else %}
+                  <span class="status-badge status-ok">{{ i.days_left }}d left</span>
+                {% endif %}
+              </td>
+              <td>
+                <form method="post" action="{{ url_for('quick_return_issue', issue_id=i.issue_id) }}" class="inline-form">
+                  <button type="submit" class="btn btn-primary">Quick Return</button>
+                </form>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="8"><div class="empty-state">No matching active issues.</div></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}

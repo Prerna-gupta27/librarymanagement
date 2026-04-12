@@ -4,29 +4,75 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{{ title or "Library Management System" }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=Outfit:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
 </head>
 <body>
-  <div class="container">
-    <h1>{{ title or "Library Management System" }}</h1>
-    <nav>
-      <a href="{{ url_for('books') }}">View Books</a>
-      <a href="{{ url_for('add_book') }}">Add New Book</a>
-      <a href="{{ url_for('register_member') }}">Register Member</a>
-      <a href="{{ url_for('issue_book') }}">Issue Book</a>
-      <a href="{{ url_for('return_book') }}">Return Book</a>
-      <a href="{{ url_for('view_fines') }}">View Fines</a>
-    </nav>
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+
+  <div class="page-shell">
+    {% set user = auth_user %}
+    <header class="card topbar">
+      <a class="brand" href="{{ url_for('index') if user else url_for('login') }}">
+        <span class="brand-mark">LMS</span>
+        <div>
+          <p class="brand-kicker">Library Operations</p>
+          <h1 class="brand-title">Stackroom Control</h1>
+        </div>
+      </a>
+      <div class="topbar-meta">
+        <span class="chip chip-accent">Daily Fine: {{ "%.2f"|format(daily_fine_rate) }}</span>
+        {% if user %}
+          <span class="chip">{{ user.display_name }}</span>
+          <span class="chip">{{ user.role }}</span>
+          <a class="chip chip-action" href="{{ url_for('reset_password') }}">Reset Password</a>
+          <a class="chip chip-action" href="{{ url_for('logout') }}">Logout</a>
+        {% else %}
+          <span class="chip">Role Based Access</span>
+        {% endif %}
+      </div>
+    </header>
+
+    {% if user %}
+      {% set ep = request.endpoint or '' %}
+      <nav class="card nav-grid">
+        {% if user.role == 'ADMIN' %}
+          <a class="nav-link {% if ep == 'dashboard' %}is-active{% endif %}" href="{{ url_for('dashboard') }}">Dashboard</a>
+          <a class="nav-link {% if ep == 'books' %}is-active{% endif %}" href="{{ url_for('books') }}">Catalog</a>
+          <a class="nav-link {% if ep == 'add_book' %}is-active{% endif %}" href="{{ url_for('add_book') }}">Add Book</a>
+          <a class="nav-link {% if ep == 'members_list' %}is-active{% endif %}" href="{{ url_for('members_list') }}">Members</a>
+          <a class="nav-link {% if ep == 'register_member' %}is-active{% endif %}" href="{{ url_for('register_member') }}">Register</a>
+          <a class="nav-link {% if ep == 'issue_book' %}is-active{% endif %}" href="{{ url_for('issue_book') }}">Issue</a>
+          <a class="nav-link {% if ep == 'active_issues' %}is-active{% endif %}" href="{{ url_for('active_issues') }}">Live Issues</a>
+          <a class="nav-link {% if ep == 'return_book' %}is-active{% endif %}" href="{{ url_for('return_book') }}">Return</a>
+          <a class="nav-link {% if ep == 'view_fines' %}is-active{% endif %}" href="{{ url_for('view_fines') }}">Fines</a>
+        {% else %}
+          <a class="nav-link {% if ep == 'member_dashboard' %}is-active{% endif %}" href="{{ url_for('member_dashboard') }}">My Dashboard</a>
+          <a class="nav-link {% if ep == 'books' %}is-active{% endif %}" href="{{ url_for('books') }}">Catalog</a>
+          <a class="nav-link {% if ep == 'member_issues' %}is-active{% endif %}" href="{{ url_for('member_issues') }}">My Issues</a>
+          <a class="nav-link {% if ep == 'member_fines' %}is-active{% endif %}" href="{{ url_for('member_fines') }}">My Fines</a>
+        {% endif %}
+      </nav>
+    {% endif %}
 
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
+        <section class="flash-stack">
         {% for category, message in messages %}
           <div class="flash {{ category }}">{{ message }}</div>
         {% endfor %}
+        </section>
       {% endif %}
     {% endwith %}
 
-    {% block content %}{% endblock %}
+    <main class="content">{% block content %}{% endblock %}</main>
+    <footer class="footer">Library Management System · {{ current_year }}</footer>
   </div>
 </body>
 </html>

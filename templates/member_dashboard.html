@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block content %}
+  <section class="card hero">
+    <div>
+      <p class="eyebrow">Member Portal</p>
+      <h2>Welcome, {{ profile.full_name or 'Member' }}</h2>
+      <p class="small">
+        {{ profile.type_name or 'Member' }} account · Limit {{ profile.max_active_issues or 0 }} active books · {{ profile.max_issue_days or 0 }} days per issue
+      </p>
+    </div>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="{{ url_for('member_issues') }}">View My Issues</a>
+      <a class="btn btn-secondary" href="{{ url_for('member_fines') }}">View My Fines</a>
+    </div>
+  </section>
+
+  <section class="metrics-grid compact-grid">
+    <article class="card metric-card">
+      <p class="metric-label">Active Issues</p>
+      <p class="metric-value">{{ summary.active_issues or 0 }}</p>
+    </article>
+    <article class="card metric-card">
+      <p class="metric-label">Overdue Issues</p>
+      <p class="metric-value">{{ summary.overdue_issues or 0 }}</p>
+    </article>
+    <article class="card metric-card">
+      <p class="metric-label">Unpaid Fines</p>
+      <p class="metric-value">{{ summary.unpaid_count or 0 }}</p>
+    </article>
+    <article class="card metric-card">
+      <p class="metric-label">Unpaid Amount</p>
+      <p class="metric-value">{{ "%.2f"|format(summary.unpaid_amount or 0) }}</p>
+    </article>
+  </section>
+
+  <section class="card">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">My Borrowed Books</p>
+        <h2>Current Active Issues</h2>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Issue</th>
+            <th>Book</th>
+            <th>Copy</th>
+            <th>Issued On</th>
+            <th>Due Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for i in active_issues %}
+            <tr>
+              <td>#{{ i.issue_id }}</td>
+              <td>{{ i.title }}<div class="small">{{ i.author }}</div></td>
+              <td>{{ i.accession_no }}</td>
+              <td>{{ i.issue_date }}</td>
+              <td>{{ i.due_date }}</td>
+              <td>
+                {% if i.is_overdue %}
+                  <span class="status-badge status-danger">Overdue {{ i.overdue_days }}d</span>
+                {% elif i.days_left <= 2 %}
+                  <span class="status-badge status-warn">Due in {{ i.days_left }}d</span>
+                {% else %}
+                  <span class="status-badge status-ok">{{ i.days_left }}d left</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="6"><div class="empty-state">No active borrowed books.</div></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}

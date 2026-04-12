@@ -1,33 +1,93 @@
 {% extends 'base.html' %}
 {% block content %}
-  <p class="small">Shows each book plus total/available copies.</p>
+  <section class="card">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Catalog Intelligence</p>
+        <h2>Books and Physical Copy Health</h2>
+      </div>
+      {% if auth_user and auth_user.role == 'ADMIN' %}
+        <a class="btn btn-secondary" href="{{ url_for('add_book') }}">Add New Title</a>
+      {% endif %}
+    </div>
 
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Book ID</th>
-        <th>Title</th>
-        <th>Author</th>
-        <th>Publisher</th>
-        <th>ISBN</th>
-        <th>Year</th>
-        <th>Total Copies</th>
-        <th>Available</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for b in books %}
-        <tr>
-          <td>{{ b.book_id }}</td>
-          <td>{{ b.title }}</td>
-          <td>{{ b.author }}</td>
-          <td>{{ b.publisher or '' }}</td>
-          <td>{{ b.isbn or '' }}</td>
-          <td>{{ b.published_year or '' }}</td>
-          <td>{{ b.total_copies }}</td>
-          <td>{{ b.available_copies }}</td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+    <form method="get" class="filter-row">
+      <div class="form-row grow">
+        <label>Search title, author, or ISBN</label>
+        <input
+          name="q"
+          placeholder="e.g. Clean Code"
+          value="{{ filters.q or '' }}"
+        />
+      </div>
+
+      <div class="form-row">
+        <label>Availability</label>
+        <select name="availability">
+          <option value="all" {% if (filters.availability or 'all') == 'all' %}selected{% endif %}>All</option>
+          <option value="available" {% if filters.availability == 'available' %}selected{% endif %}>Issuable now</option>
+          <option value="issued" {% if filters.availability == 'issued' %}selected{% endif %}>Has issued copies</option>
+          <option value="no_copies" {% if filters.availability == 'no_copies' %}selected{% endif %}>No copies added</option>
+        </select>
+      </div>
+
+      <div class="form-row button-row">
+        <button class="btn btn-primary" type="submit">Apply Filters</button>
+      </div>
+    </form>
+
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Publisher / Year</th>
+            <th>ISBN</th>
+            <th>Total</th>
+            <th>Available</th>
+            <th>Issued</th>
+            <th>Lost</th>
+            <th>Damaged</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in books %}
+            <tr>
+              <td>#{{ b.book_id }}</td>
+              <td>{{ b.title }}</td>
+              <td>{{ b.author }}</td>
+              <td>
+                {{ b.publisher or '-' }}
+                <div class="small">{{ b.published_year or 'Year n/a' }}</div>
+              </td>
+              <td>{{ b.isbn or '-' }}</td>
+              <td>{{ b.total_copies }}</td>
+              <td>{{ b.available_copies }}</td>
+              <td>{{ b.issued_copies }}</td>
+              <td>{{ b.lost_copies }}</td>
+              <td>{{ b.damaged_copies }}</td>
+              <td>
+                {% if b.total_copies == 0 %}
+                  <span class="status-badge status-muted">No copies</span>
+                {% elif b.available_copies == 0 %}
+                  <span class="status-badge status-warn">Fully issued</span>
+                {% else %}
+                  <span class="status-badge status-ok">Issuable</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="11">
+                <div class="empty-state">No books matched your filters.</div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
 {% endblock %}

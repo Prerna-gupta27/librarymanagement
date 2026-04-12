@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block content %}
+  <section class="card hero">
+    <div>
+      <p class="eyebrow">Control Center</p>
+      <h2>Run circulation with zero blind spots.</h2>
+      <p class="small">Track live borrowing pressure, overdue risk, and penalty exposure before they become operational pain.</p>
+    </div>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="{{ url_for('issue_book') }}">Issue Book</a>
+      <a class="btn btn-secondary" href="{{ url_for('return_book') }}">Process Return</a>
+    </div>
+  </section>
+
+  <section class="metrics-grid">
+    <article class="card metric-card">
+      <p class="metric-label">Book Titles</p>
+      <p class="metric-value">{{ metrics.total_titles or 0 }}</p>
+    </article>
+    <article class="card metric-card">
+      <p class="metric-label">Total Copies</p>
+      <p class="metric-value">{{ metrics.total_copies or 0 }}</p>
+    </article>
+    <article class="card metric-card">
+      <p class="metric-label">Available Copies</p>
+      <p class="metric-value">{{ metrics.available_copies or 0 }}</p>
+    </article>
+    <article class="card metric-card">
+      <p class="metric-label">Active Members</p>
+      <p class="metric-value">{{ metrics.active_members or 0 }}</p>
+    </article>
+    <article class="card metric-card">
+      <p class="metric-label">Live Issues</p>
+      <p class="metric-value">{{ metrics.active_issues or 0 }}</p>
+    </article>
+    <article class="card metric-card">
+      <p class="metric-label">Overdue Issues</p>
+      <p class="metric-value">{{ metrics.overdue_issues or 0 }}</p>
+    </article>
+    <article class="card metric-card">
+      <p class="metric-label">Unpaid Fines</p>
+      <p class="metric-value">{{ metrics.unpaid_fines_count or 0 }}</p>
+    </article>
+    <article class="card metric-card">
+      <p class="metric-label">Unpaid Amount</p>
+      <p class="metric-value">{{ "%.2f"|format(metrics.unpaid_fines_amount or 0) }}</p>
+    </article>
+  </section>
+
+  <section class="split-grid">
+    <article class="card">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Due Radar</p>
+          <h2>Nearest Deadlines</h2>
+        </div>
+        <a class="btn btn-muted" href="{{ url_for('active_issues') }}">Open Live Issues</a>
+      </div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Issue</th>
+              <th>Member</th>
+              <th>Book</th>
+              <th>Due</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in due_soon %}
+              <tr>
+                <td>#{{ row.issue_id }}</td>
+                <td>{{ row.full_name }}</td>
+                <td>{{ row.title }}<div class="small">{{ row.accession_no }}</div></td>
+                <td>
+                  {{ row.due_date }}
+                  {% if row.days_left < 0 %}
+                    <span class="status-badge status-danger">Overdue {{ row.days_left|abs }}d</span>
+                  {% elif row.days_left <= 2 %}
+                    <span class="status-badge status-warn">Due in {{ row.days_left }}d</span>
+                  {% else %}
+                    <span class="status-badge status-ok">{{ row.days_left }}d left</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="4"><div class="empty-state">No active issues yet.</div></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Recent Activity</p>
+          <h2>Latest Circulation Records</h2>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Issue</th>
+              <th>Member</th>
+              <th>Book</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in recent_issues %}
+              <tr>
+                <td>#{{ row.issue_id }}</td>
+                <td>{{ row.full_name }}</td>
+                <td>{{ row.title }}<div class="small">{{ row.accession_no }}</div></td>
+                <td>
+                  {% if row.return_date %}
+                    <span class="status-badge status-ok">Returned {{ row.return_date }}</span>
+                  {% else %}
+                    <span class="status-badge status-warn">Open · due {{ row.due_date }}</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="4"><div class="empty-state">No issue history available.</div></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </article>
+  </section>
+{% endblock %}
