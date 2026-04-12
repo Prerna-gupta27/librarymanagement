@@ -1,32 +1,38 @@
 {% extends 'base.html' %}
 {% block content %}
-  <p class="small">Issues an AVAILABLE copy to a member. Due date is computed from the member type rules.</p>
+  <div class="card">
+    <div class="card-body">
+      <p class="text-muted mb-3">Issues an AVAILABLE copy to a member. Due date is computed from the member type rules.</p>
 
-  <form method="post">
-    <div class="form-row">
-      <label>Member *</label>
-      <select name="member_id" required>
-        <option value="">-- Select --</option>
-        {% for m in members %}
-          <option value="{{ m.member_id }}" {% if form.member_id == (m.member_id|string) %}selected{% endif %}>
-            #{{ m.member_id }} - {{ m.full_name }} ({{ m.type_name }})
-          </option>
-        {% endfor %}
-      </select>
+      <form method="post" class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">👤 Member *</label>
+          <select class="form-select" name="member_id" required>
+            <option value="">-- Select --</option>
+            {% for m in members %}
+              <option value="{{ m.member_id }}" {% if form.member_id == (m.member_id|string) %}selected{% endif %}>
+                #{{ m.member_id }} - {{ m.full_name }} ({{ m.type_name }})
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">📚 Book Copy (Available) *</label>
+          <select class="form-select" name="copy_id" required>
+            <option value="">-- Select --</option>
+            {% for c in copies %}
+              <option value="{{ c.copy_id }}" {% if form.copy_id == (c.copy_id|string) %}selected{% endif %}>
+                {{ c.title }} by {{ c.author }} — Copy #{{ c.copy_id }} ({{ c.accession_no }})
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-12">
+          <button class="btn btn-primary" type="submit">Issue</button>
+        </div>
+      </form>
     </div>
-
-    <div class="form-row">
-      <label>Copy (Available) *</label>
-      <select name="copy_id" required>
-        <option value="">-- Select --</option>
-        {% for c in copies %}
-          <option value="{{ c.copy_id }}" {% if form.copy_id == (c.copy_id|string) %}selected{% endif %}>
-            Copy #{{ c.copy_id }} - {{ c.accession_no }} - {{ c.title }} by {{ c.author }}
-          </option>
-        {% endfor %}
-      </select>
-    </div>
-
-    <button type="submit">Issue</button>
-  </form>
+  </div>
 {% endblock %}

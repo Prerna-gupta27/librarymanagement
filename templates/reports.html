@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="row g-3 mb-3">
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="fw-semibold">Total Fines Assessed</div>
+          <div class="display-6">{{ fines_summary.total_assessed }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="fw-semibold">Total Fines Collected</div>
+          <div class="display-6">{{ fines_summary.total_collected }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="fw-semibold">Total Unpaid</div>
+          <div class="display-6">{{ fines_summary.total_unpaid }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header fw-semibold">Overdue Books</div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+          <thead>
+            <tr>
+              <th>Issue ID</th>
+              <th>Member</th>
+              <th>Book</th>
+              <th>Accession</th>
+              <th>Issue Date</th>
+              <th>Due Date</th>
+              <th class="text-end">Days Overdue</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in overdue %}
+              <tr>
+                <td>{{ r.issue_id }}</td>
+                <td>{{ r.full_name }}</td>
+                <td>{{ r.title }} <span class="text-muted">by {{ r.author }}</span></td>
+                <td>{{ r.accession_no }}</td>
+                <td>{{ r.issue_date }}</td>
+                <td>{{ r.due_date }}</td>
+                <td class="text-end">{{ r.days_overdue }}</td>
+              </tr>
+            {% endfor %}
+            {% if not overdue %}
+              <tr><td colspan="7" class="text-muted">No overdue books.</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header fw-semibold">Most Issued Books (Top 10)</div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+          <thead>
+            <tr>
+              <th>Book ID</th>
+              <th>Title</th>
+              <th>Author</th>
+              <th class="text-end">Total Issues</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in most_issued %}
+              <tr>
+                <td>{{ r.book_id }}</td>
+                <td>{{ r.title }}</td>
+                <td>{{ r.author }}</td>
+                <td class="text-end">{{ r.total_issues }}</td>
+              </tr>
+            {% endfor %}
+            {% if not most_issued %}
+              <tr><td colspan="4" class="text-muted">No issue history yet.</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock %}

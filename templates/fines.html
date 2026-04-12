@@ -1,35 +1,51 @@
 {% extends 'base.html' %}
 {% block content %}
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Fine ID</th>
-        <th>Issue ID</th>
-        <th>Member</th>
-        <th>Book</th>
-        <th>Accession</th>
-        <th>Assessed</th>
-        <th>Days Overdue</th>
-        <th>Amount</th>
-        <th>Paid?</th>
-        <th>Paid Date</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for f in fines %}
-        <tr>
-          <td>{{ f.fine_id }}</td>
-          <td>{{ f.issue_id }}</td>
-          <td>{{ f.full_name }}</td>
-          <td>{{ f.title }} by {{ f.author }}</td>
-          <td>{{ f.accession_no }}</td>
-          <td>{{ f.assessed_date }}</td>
-          <td>{{ f.days_overdue }}</td>
-          <td>{{ f.fine_amount }}</td>
-          <td>{{ 'YES' if f.is_paid else 'NO' }}</td>
-          <td>{{ f.paid_date or '' }}</td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="card">
+    <div class="card-header fw-semibold">Fines</div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+          <thead>
+            <tr>
+              <th>Fine ID</th>
+              <th>Issue ID</th>
+              <th>Member</th>
+              <th>Book</th>
+              <th>Accession</th>
+              <th>Assessed</th>
+              <th class="text-end">Days Overdue</th>
+              <th class="text-end">Amount</th>
+              <th>Paid?</th>
+              <th>Paid Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for f in fines %}
+              <tr>
+                <td>{{ f.fine_id }}</td>
+                <td>{{ f.issue_id }}</td>
+                <td>{{ f.full_name }}</td>
+                <td>{{ f.title }} <span class="text-muted">by {{ f.author }}</span></td>
+                <td>{{ f.accession_no }}</td>
+                <td>{{ f.assessed_date }}</td>
+                <td class="text-end">{{ f.days_overdue }}</td>
+                <td class="text-end">{{ f.fine_amount }}</td>
+                <td>
+                  {% if f.is_paid %}
+                    <span class="badge text-bg-success">YES</span>
+                  {% else %}
+                    <span class="badge text-bg-warning">NO</span>
+                  {% endif %}
+                </td>
+                <td>{{ f.paid_date or '' }}</td>
+              </tr>
+            {% endfor %}
+            {% if not fines %}
+              <tr><td colspan="10" class="text-muted">No fines yet.</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 {% endblock %}

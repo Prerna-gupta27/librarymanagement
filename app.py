@@ -4,6 +4,7 @@ from datetime import date, timedelta
 
 from flask import Flask, flash, redirect, render_template, request, url_for
 from dotenv import load_dotenv
+from mysql.connector import Error
 
 from config import Config
 from db import db_error_message, get_conn
@@ -23,8 +24,30 @@ def create_app() -> Flask:
 
     @app.get("/books")
     def books():
-        """View all books."""
-        sql = """
+        """View all books with search & filters + top statistics."""
+
+        q = (request.args.get("q") or "").strip()
+        status_filter = (request.args.get("status") or "all").strip().lower()
+
+        where_parts = []
+        params = []
+        if q:
+            where_parts.append("(b.title LIKE %s OR b.author LIKE %s)")
+            like = f"%{q}%"
+            params.extend([like, like])
+
+        where_sql = ""
+        if where_parts:
+            where_sql = "WHERE " + " AND ".join(where_parts)
+
+        # Filter based on aggregated copy counts.
+        having_sql = ""
+        if status_filter == "available":
+            having_sql = "HAVING available_copies > 0"
+        elif status_filter == "issued":
+            having_sql = "HAVING issued_copies > 0"
+
+        sql = f"""
             SELECT
               b.book_id,
               b.title,
@@ -32,22 +55,51 @@ def create_app() -> Flask:
               b.publisher,
               b.isbn,
               b.published_year,
-                            COUNT(c.copy_id) AS total_copies,
-                            IFNULL(SUM(CASE WHEN c.status = 'AVAILABLE' THEN 1 ELSE 0 END), 0) AS available_copies
+              COUNT(c.copy_id) AS total_copies,
+              IFNULL(SUM(CASE WHEN c.status = 'AVAILABLE' THEN 1 ELSE 0 END), 0) AS available_copies,
+              IFNULL(SUM(CASE WHEN c.status = 'ISSUED' THEN 1 ELSE 0 END), 0) AS issued_copies
             FROM books b
             LEFT JOIN book_copies c ON c.book_id = b.book_id
+            {where_sql}
             GROUP BY b.book_id, b.title, b.author, b.publisher, b.isbn, b.published_year
+            {having_sql}
             ORDER BY b.book_id DESC
+        """
+
+        stats_sql = """
+            SELECT
+              COUNT(*) AS total_issues,
+              SUM(CASE WHEN return_date IS NOT NULL THEN 1 ELSE 0 END) AS total_returned,
+              SUM(CASE WHEN return_date IS NULL THEN 1 ELSE 0 END) AS currently_borrowed
+            FROM book_issues
         """
         try:
             with get_conn(app) as conn:
                 cur = conn.cursor(dictionary=True)
-                cur.execute(sql)
+                cur.execute(sql, params)
                 rows = cur.fetchall()
-            return render_template("books.html", title="All Books", books=rows)
+
+                cur.execute(stats_sql)
+                stats = cur.fetchone() or {"total_issues": 0, "total_returned": 0, "currently_borrowed": 0}
+
+            return render_template(
+                "books.html",
+                title="All Books",
+                books=rows,
+                stats=stats,
+                q=q,
+                status_filter=status_filter,
+            )
         except Exception as exc:
             flash(db_error_message(exc), "error")
-            return render_template("books.html", title="All Books", books=[])
+            return render_template(
+                "books.html",
+                title="All Books",
+                books=[],
+                stats={"total_issues": 0, "total_returned": 0, "currently_borrowed": 0},
+                q=q,
+                status_filter=status_filter,
+            )
 
     @app.route("/books/new", methods=["GET", "POST"])
     def add_book():
@@ -169,6 +221,20 @@ def create_app() -> Flask:
         try:
             with get_conn(app) as conn:
                 cur = conn.cursor()
+
+                # Basic uniqueness validation for email (schema also enforces it)
+                if form["email"]:
+                    cur2 = conn.cursor(dictionary=True)
+                    cur2.execute("SELECT member_id FROM members WHERE email = %s", (form["email"],))
+                    if cur2.fetchone():
+                        flash("This email is already registered.", "error")
+                        return render_template(
+                            "register_member.html",
+                            title="Register Member",
+                            member_types=member_types,
+                            form=form,
+                        )
+
                 cur.execute(
                     """
                     INSERT INTO members (member_type_id, full_name, email, phone, is_active)
@@ -180,6 +246,18 @@ def create_app() -> Flask:
 
             flash("Member registered successfully.", "success")
             return redirect(url_for("register_member"))
+        except Error as exc:
+            # Friendly message for duplicate email, etc.
+            if getattr(exc, "errno", None) == 1062:
+                flash("Email already exists. Please use a different email.", "error")
+            else:
+                flash(db_error_message(exc), "error")
+            return render_template(
+                "register_member.html",
+                title="Register Member",
+                member_types=member_types,
+                form=form,
+            )
         except Exception as exc:
             flash(db_error_message(exc), "error")
             return render_template(
@@ -330,15 +408,28 @@ def create_app() -> Flask:
 
                 due_date = issue_date + timedelta(days=int(member["max_issue_days"]))
 
-                # Create issue record
+                # Create issue record.
+                # If you haven't run schema_update.sql yet, the status column may not exist.
                 cur2 = conn.cursor()
-                cur2.execute(
-                    """
-                    INSERT INTO book_issues (copy_id, member_id, issue_date, due_date, return_date)
-                    VALUES (%s, %s, %s, %s, NULL)
-                    """,
-                    (copy_id, member_id, issue_date, due_date),
-                )
+                try:
+                    cur2.execute(
+                        """
+                        INSERT INTO book_issues (copy_id, member_id, issue_date, due_date, return_date, status)
+                        VALUES (%s, %s, %s, %s, NULL, 'ISSUED')
+                        """,
+                        (copy_id, member_id, issue_date, due_date),
+                    )
+                except Error as e:
+                    if getattr(e, "errno", None) == 1054:  # Unknown column
+                        cur2.execute(
+                            """
+                            INSERT INTO book_issues (copy_id, member_id, issue_date, due_date, return_date)
+                            VALUES (%s, %s, %s, %s, NULL)
+                            """,
+                            (copy_id, member_id, issue_date, due_date),
+                        )
+                    else:
+                        raise
                 issue_id = cur2.lastrowid
 
                 # Mark copy as issued
@@ -386,9 +477,11 @@ def create_app() -> Flask:
                 cur.execute(
                     """
                     SELECT bi.issue_id, bi.copy_id, bi.member_id, bi.issue_date, bi.due_date, bi.return_date,
-                           m.full_name AS member_name, c.accession_no
+                           m.full_name AS member_name, c.accession_no,
+                           mt.type_name AS member_type_name
                     FROM book_issues bi
                     JOIN members m ON m.member_id = bi.member_id
+                    JOIN member_types mt ON mt.member_type_id = m.member_type_id
                     JOIN book_copies c ON c.copy_id = bi.copy_id
                     WHERE bi.issue_id = %s
                     FOR UPDATE
@@ -407,12 +500,21 @@ def create_app() -> Flask:
                     flash("This book has already been returned.", "error")
                     return render_template("return_book.html", title="Return Book", form=form, result=None)
 
-                # Update issue return_date
+                # Update issue return_date (and status if column exists)
                 cur2 = conn.cursor()
-                cur2.execute(
-                    "UPDATE book_issues SET return_date = %s WHERE issue_id = %s",
-                    (return_date, issue_id),
-                )
+                try:
+                    cur2.execute(
+                        "UPDATE book_issues SET return_date = %s, status = 'RETURNED' WHERE issue_id = %s",
+                        (return_date, issue_id),
+                    )
+                except Error as e:
+                    if getattr(e, "errno", None) == 1054:  # Unknown column
+                        cur2.execute(
+                            "UPDATE book_issues SET return_date = %s WHERE issue_id = %s",
+                            (return_date, issue_id),
+                        )
+                    else:
+                        raise
 
                 # Mark copy as available
                 cur2.execute(
@@ -426,7 +528,8 @@ def create_app() -> Flask:
                 if days_overdue < 0:
                     days_overdue = 0
 
-                fine_amount = round(days_overdue * float(app.config["DAILY_FINE_RATE"]), 2)
+                rate = Config.fine_rate_for(issue.get("member_type_name") or "")
+                fine_amount = round(days_overdue * rate, 2)
 
                 if days_overdue > 0:
                     # Insert or update fine for this issue (unique issue_id)
@@ -494,6 +597,78 @@ def create_app() -> Flask:
         except Exception as exc:
             flash(db_error_message(exc), "error")
             return render_template("fines.html", title="Fines", fines=[])
+
+    @app.get("/reports")
+    def reports():
+        """Simple reports: overdue list, most issued books, total fines collected."""
+        overdue_sql = """
+            SELECT
+              bi.issue_id,
+              m.full_name,
+              b.title,
+              b.author,
+              c.accession_no,
+              bi.issue_date,
+              bi.due_date,
+              DATEDIFF(CURDATE(), bi.due_date) AS days_overdue
+            FROM book_issues bi
+            JOIN members m ON m.member_id = bi.member_id
+            JOIN book_copies c ON c.copy_id = bi.copy_id
+            JOIN books b ON b.book_id = c.book_id
+            WHERE bi.return_date IS NULL AND bi.due_date < CURDATE()
+            ORDER BY days_overdue DESC, bi.due_date ASC
+        """
+
+        most_issued_sql = """
+            SELECT
+              b.book_id,
+              b.title,
+              b.author,
+              COUNT(*) AS total_issues
+            FROM book_issues bi
+            JOIN book_copies c ON c.copy_id = bi.copy_id
+            JOIN books b ON b.book_id = c.book_id
+            GROUP BY b.book_id, b.title, b.author
+            ORDER BY total_issues DESC, b.book_id ASC
+            LIMIT 10
+        """
+
+        fines_summary_sql = """
+            SELECT
+              IFNULL(SUM(f.fine_amount), 0) AS total_assessed,
+              IFNULL(SUM(CASE WHEN f.is_paid = 1 THEN f.fine_amount ELSE 0 END), 0) AS total_collected,
+              IFNULL(SUM(CASE WHEN f.is_paid = 0 THEN f.fine_amount ELSE 0 END), 0) AS total_unpaid
+            FROM fines f
+        """
+
+        try:
+            with get_conn(app) as conn:
+                cur = conn.cursor(dictionary=True)
+                cur.execute(overdue_sql)
+                overdue = cur.fetchall()
+
+                cur.execute(most_issued_sql)
+                most_issued = cur.fetchall()
+
+                cur.execute(fines_summary_sql)
+                fines_summary = cur.fetchone() or {"total_assessed": 0, "total_collected": 0, "total_unpaid": 0}
+
+            return render_template(
+                "reports.html",
+                title="Reports",
+                overdue=overdue,
+                most_issued=most_issued,
+                fines_summary=fines_summary,
+            )
+        except Exception as exc:
+            flash(db_error_message(exc), "error")
+            return render_template(
+                "reports.html",
+                title="Reports",
+                overdue=[],
+                most_issued=[],
+                fines_summary={"total_assessed": 0, "total_collected": 0, "total_unpaid": 0},
+            )
 
     return app
 

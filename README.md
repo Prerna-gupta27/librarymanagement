@@ -27,6 +27,15 @@ Example values are in `.env.example`.
 
 This project will also auto-load a local `.env` file (if present) on startup.
 
+## Apply requested rule updates (one-time)
+
+If you want the exact rules:
+
+- Student → max 2 books, 7 days
+- Faculty → max 5 books, 14 days
+
+And you want `status` column in `book_issues`, run: `schema_update.sql` in MySQL Workbench.
+
 ### Quick way on Windows (PowerShell)
 
 From this project folder:
@@ -53,13 +62,24 @@ Then open: http://127.0.0.1:5000
 ## Features / Pages
 
 - **View all books**: `/books`
+  - Includes search (title/author), filters (available/issued), and dashboard stats
 - **Add new book** (optionally add accession numbers / copies): `/books/new`
 - **Register new member**: `/members/new`
 - **Issue a book to a member**: `/issue`
 - **Return a book + calculate fine**: `/return`
 - **View all fines and payment status**: `/fines`
+- **Reports**: `/reports` (overdue list, most issued books, fines totals)
 
 ## Notes
 
 - Issue rules are enforced using the `member_types` table (`max_active_issues`, `max_issue_days`).
 - Returning a book inserts/updates a row in `fines` only if `days_overdue > 0`.
+
+### Optional different fine rates
+
+Set these env vars if you want different fine rates:
+
+- `DAILY_FINE_RATE_STUDENT`
+- `DAILY_FINE_RATE_FACULTY`
+
+Otherwise the app uses `DAILY_FINE_RATE` for everyone.

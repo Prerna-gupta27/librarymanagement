@@ -1,34 +1,40 @@
 {% extends 'base.html' %}
 {% block content %}
-  <form method="post">
-    <div class="form-row">
-      <label>Member Type *</label>
-      <select name="member_type_id" required>
-        <option value="">-- Select --</option>
-        {% for t in member_types %}
-          <option value="{{ t.member_type_id }}" {% if form.member_type_id == (t.member_type_id|string) %}selected{% endif %}>
-            {{ t.type_name }} (max {{ t.max_active_issues }} books, {{ t.max_issue_days }} days)
-          </option>
-        {% endfor %}
-      </select>
-    </div>
+  <div class="card">
+    <div class="card-body">
+      <form method="post" class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Member Type *</label>
+          <select class="form-select" name="member_type_id" required>
+            <option value="">-- Select --</option>
+            {% for t in member_types %}
+              <option value="{{ t.member_type_id }}" {% if form.member_type_id == (t.member_type_id|string) %}selected{% endif %}>
+                {{ t.type_name }} (max {{ t.max_active_issues }} books, {{ t.max_issue_days }} days)
+              </option>
+            {% endfor %}
+          </select>
+        </div>
 
-    <div class="form-row">
-      <label>Full Name *</label>
-      <input name="full_name" required value="{{ form.full_name or '' }}" />
-    </div>
+        <div class="col-md-6">
+          <label class="form-label">Full Name *</label>
+          <input class="form-control" name="full_name" required value="{{ form.full_name or '' }}" />
+        </div>
 
-    <div class="form-row">
-      <label>Email</label>
-      <input name="email" type="email" value="{{ form.email or '' }}" />
-      <div class="small">Email must be unique if provided.</div>
-    </div>
+        <div class="col-md-6">
+          <label class="form-label">Email</label>
+          <input class="form-control" name="email" type="email" value="{{ form.email or '' }}" />
+          <div class="form-text">Email must be unique if provided.</div>
+        </div>
 
-    <div class="form-row">
-      <label>Phone</label>
-      <input name="phone" value="{{ form.phone or '' }}" />
-    </div>
+        <div class="col-md-6">
+          <label class="form-label">Phone</label>
+          <input class="form-control" name="phone" value="{{ form.phone or '' }}" />
+        </div>
 
-    <button type="submit">Register</button>
-  </form>
+        <div class="col-12">
+          <button class="btn btn-success" type="submit">Register</button>
+        </div>
+      </form>
+    </div>
+  </div>
 {% endblock %}

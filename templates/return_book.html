@@ -1,27 +1,38 @@
 {% extends 'base.html' %}
 {% block content %}
-  <p class="small">Return by Issue ID. Fine is calculated as days_overdue × daily rate.</p>
+  <div class="card mb-3">
+    <div class="card-body">
+      <p class="text-muted mb-3">Return by Issue ID. Fine = max(0, return_date - due_date) × daily rate.</p>
 
-  <form method="post">
-    <div class="form-row">
-      <label>Issue ID *</label>
-      <input name="issue_id" type="number" min="1" required value="{{ form.issue_id or '' }}" />
+      <form method="post" class="row g-2 align-items-end">
+        <div class="col-md-6">
+          <label class="form-label">Issue ID *</label>
+          <input class="form-control" name="issue_id" type="number" min="1" required value="{{ form.issue_id or '' }}" />
+        </div>
+        <div class="col-md-3 d-grid">
+          <button class="btn btn-danger" type="submit">Return</button>
+        </div>
+      </form>
     </div>
-
-    <button type="submit">Return</button>
-  </form>
+  </div>
 
   {% if result %}
-    <h2>Return Result</h2>
-    <table class="table">
-      <tr><th>Issue ID</th><td>{{ result.issue_id }}</td></tr>
-      <tr><th>Member</th><td>{{ result.member_name }}</td></tr>
-      <tr><th>Book Copy</th><td>{{ result.accession_no }} (Copy #{{ result.copy_id }})</td></tr>
-      <tr><th>Issue Date</th><td>{{ result.issue_date }}</td></tr>
-      <tr><th>Due Date</th><td>{{ result.due_date }}</td></tr>
-      <tr><th>Return Date</th><td>{{ result.return_date }}</td></tr>
-      <tr><th>Days Overdue</th><td>{{ result.days_overdue }}</td></tr>
-      <tr><th>Fine Amount</th><td>{{ result.fine_amount }}</td></tr>
-    </table>
+    <div class="card">
+      <div class="card-header fw-semibold">Return Result</div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-striped align-middle">
+            <tr><th style="width: 220px;">Issue ID</th><td>{{ result.issue_id }}</td></tr>
+            <tr><th>Member</th><td>{{ result.member_name }}</td></tr>
+            <tr><th>Book Copy</th><td>{{ result.accession_no }} (Copy #{{ result.copy_id }})</td></tr>
+            <tr><th>Issue Date</th><td>{{ result.issue_date }}</td></tr>
+            <tr><th>Due Date</th><td>{{ result.due_date }}</td></tr>
+            <tr><th>Return Date</th><td>{{ result.return_date }}</td></tr>
+            <tr><th>Days Overdue</th><td>{{ result.days_overdue }}</td></tr>
+            <tr><th>Fine Amount</th><td>{{ result.fine_amount }}</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
   {% endif %}
 {% endblock %}

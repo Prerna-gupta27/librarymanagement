@@ -1,33 +1,93 @@
 {% extends 'base.html' %}
 {% block content %}
-  <p class="small">Shows each book plus total/available copies.</p>
+  <div class="row g-3 mb-3">
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="text-muted">Total Issued</div>
+          <div class="display-6">{{ stats.total_issues }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="text-muted">Total Returned</div>
+          <div class="display-6">{{ stats.total_returned }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="text-muted">Currently Borrowed</div>
+          <div class="display-6">{{ stats.currently_borrowed }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Book ID</th>
-        <th>Title</th>
-        <th>Author</th>
-        <th>Publisher</th>
-        <th>ISBN</th>
-        <th>Year</th>
-        <th>Total Copies</th>
-        <th>Available</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for b in books %}
-        <tr>
-          <td>{{ b.book_id }}</td>
-          <td>{{ b.title }}</td>
-          <td>{{ b.author }}</td>
-          <td>{{ b.publisher or '' }}</td>
-          <td>{{ b.isbn or '' }}</td>
-          <td>{{ b.published_year or '' }}</td>
-          <td>{{ b.total_copies }}</td>
-          <td>{{ b.available_copies }}</td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="card mb-3">
+    <div class="card-body">
+      <form method="get" class="row g-2 align-items-end">
+        <div class="col-md-6">
+          <label class="form-label">Search (Title / Author)</label>
+          <input class="form-control" name="q" value="{{ q or '' }}" placeholder="e.g. Clean Code / Martin" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Filter</label>
+          <select class="form-select" name="status">
+            <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All books</option>
+            <option value="available" {% if status_filter == 'available' %}selected{% endif %}>Available books</option>
+            <option value="issued" {% if status_filter == 'issued' %}selected{% endif %}>Issued books</option>
+          </select>
+        </div>
+        <div class="col-md-2 d-grid">
+          <button class="btn btn-primary" type="submit">Search</button>
+        </div>
+      </form>
+      <div class="form-text">Available = copies with status AVAILABLE. Issued = copies with status ISSUED.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header fw-semibold">Books</div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+          <thead>
+            <tr>
+              <th>Book ID</th>
+              <th>Title</th>
+              <th>Author</th>
+              <th>Publisher</th>
+              <th>ISBN</th>
+              <th>Year</th>
+              <th class="text-end">Total Copies</th>
+              <th class="text-end">Available</th>
+              <th class="text-end">Issued</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for b in books %}
+              <tr>
+                <td>{{ b.book_id }}</td>
+                <td>{{ b.title }}</td>
+                <td>{{ b.author }}</td>
+                <td>{{ b.publisher or '' }}</td>
+                <td>{{ b.isbn or '' }}</td>
+                <td>{{ b.published_year or '' }}</td>
+                <td class="text-end">{{ b.total_copies }}</td>
+                <td class="text-end">{{ b.available_copies }}</td>
+                <td class="text-end">{{ b.issued_copies }}</td>
+              </tr>
+            {% endfor %}
+            {% if not books %}
+              <tr><td colspan="9" class="text-muted">No books found.</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 {% endblock %}
