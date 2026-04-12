@@ -1560,4 +1560,4 @@ app = create_app()
 
 if __name__ == "__main__":
     # Beginner-friendly way to run without using the Flask CLI
-    app.run(debug=True)
+    app.run(debug=True, use_reloader=False, threaded=True)
