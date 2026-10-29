@@ -9,6 +9,7 @@ DROP TABLE IF EXISTS fines;
 DROP TABLE IF EXISTS book_issues;
 DROP TABLE IF EXISTS book_copies;
 DROP TABLE IF EXISTS books;
+DROP TABLE IF EXISTS user_accounts;
 DROP TABLE IF EXISTS members;
 DROP TABLE IF EXISTS member_types;
 
@@ -35,6 +36,26 @@ CREATE TABLE members (
   CONSTRAINT fk_members_member_types
     FOREIGN KEY (member_type_id) REFERENCES member_types(member_type_id)
       ON UPDATE RESTRICT ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE user_accounts (
+  user_id INT NOT NULL AUTO_INCREMENT,
+  username VARCHAR(100) NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  role VARCHAR(20) NOT NULL, -- ADMIN | FACULTY | STUDENT
+  member_id INT NULL,
+  must_reset_password TINYINT(1) NOT NULL DEFAULT 0,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (user_id),
+  UNIQUE KEY uq_user_accounts_username (username),
+  UNIQUE KEY uq_user_accounts_member (member_id),
+  KEY ix_user_accounts_role (role),
+  CONSTRAINT fk_user_accounts_member
+    FOREIGN KEY (member_id) REFERENCES members(member_id)
+      ON UPDATE RESTRICT ON DELETE CASCADE,
+  CONSTRAINT ck_user_accounts_role
+    CHECK (role IN ('ADMIN', 'FACULTY', 'STUDENT'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE books (

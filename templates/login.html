@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block content %}
+  <section class="auth-layout">
+    <article class="card auth-card">
+      <p class="eyebrow">Access Portal</p>
+      <h2>Sign in to Library Management</h2>
+
+      <form method="post" class="form-grid">
+        <input type="hidden" name="next" value="{{ next_target or '' }}" />
+
+        <div class="form-row full-width">
+          <label>Login As *</label>
+          <select name="role" required>
+            <option value="">-- Select --</option>
+            <option value="ADMIN" {% if form.role == 'ADMIN' %}selected{% endif %}>Admin</option>
+            <option value="FACULTY" {% if form.role == 'FACULTY' %}selected{% endif %}>Faculty</option>
+            <option value="STUDENT" {% if form.role == 'STUDENT' %}selected{% endif %}>Student</option>
+          </select>
+        </div>
+
+        <div class="form-row full-width">
+          <label>Username *</label>
+          <input name="username" required value="{{ form.username or '' }}" placeholder="Enter username" />
+        </div>
+
+        <div class="form-row full-width">
+          <label>Password *</label>
+          <input name="password" type="password" required placeholder="Enter password" />
+        </div>
+
+        <div class="form-row full-width button-row">
+          <button class="btn btn-primary" type="submit">Sign In</button>
+        </div>
+      </form>
+
+      <div class="auth-notes">
+        <p class="small"><strong>Default Admin:</strong> username <strong>admin</strong>, password <strong>admin123</strong></p>
+        <p class="small"><strong>Default Student:</strong> username <strong>student&lt;member_id&gt;</strong> (example <strong>student1</strong>), password <strong>user123</strong></p>
+        <p class="small"><strong>Default Faculty:</strong> username <strong>faculty&lt;member_id&gt;</strong> (example <strong>faculty3</strong>), password <strong>user123</strong></p>
+      </div>
+    </article>
+  </section>
+{% endblock %}

@@ -1,32 +1,44 @@
 {% extends 'base.html' %}
 {% block content %}
-  <p class="small">Issues an AVAILABLE copy to a member. Due date is computed from the member type rules.</p>
-
-  <form method="post">
-    <div class="form-row">
-      <label>Member *</label>
-      <select name="member_id" required>
-        <option value="">-- Select --</option>
-        {% for m in members %}
-          <option value="{{ m.member_id }}" {% if form.member_id == (m.member_id|string) %}selected{% endif %}>
-            #{{ m.member_id }} - {{ m.full_name }} ({{ m.type_name }})
-          </option>
-        {% endfor %}
-      </select>
+  <section class="card">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Circulation Desk</p>
+        <h2>Issue a Physical Copy</h2>
+      </div>
+      <a class="btn btn-muted" href="{{ url_for('active_issues') }}">View Active Issues</a>
     </div>
 
-    <div class="form-row">
-      <label>Copy (Available) *</label>
-      <select name="copy_id" required>
-        <option value="">-- Select --</option>
-        {% for c in copies %}
-          <option value="{{ c.copy_id }}" {% if form.copy_id == (c.copy_id|string) %}selected{% endif %}>
-            Copy #{{ c.copy_id }} - {{ c.accession_no }} - {{ c.title }} by {{ c.author }}
-          </option>
-        {% endfor %}
-      </select>
-    </div>
+    <p class="small">Only active members and currently available copies are shown. Due date is auto-computed from member policy.</p>
 
-    <button type="submit">Issue</button>
-  </form>
+    <form method="post" class="form-grid">
+      <div class="form-row full-width">
+        <label>Member *</label>
+        <select name="member_id" required>
+          <option value="">-- Select --</option>
+          {% for m in members %}
+            <option value="{{ m.member_id }}" {% if form.member_id == (m.member_id|string) %}selected{% endif %}>
+              #{{ m.member_id }} - {{ m.full_name }} ({{ m.type_name }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-row full-width">
+        <label>Copy (Available) *</label>
+        <select name="copy_id" required>
+          <option value="">-- Select --</option>
+          {% for c in copies %}
+            <option value="{{ c.copy_id }}" {% if form.copy_id == (c.copy_id|string) %}selected{% endif %}>
+              Copy #{{ c.copy_id }} - {{ c.accession_no }} - {{ c.title }} by {{ c.author }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-row full-width button-row">
+        <button class="btn btn-primary" type="submit">Issue Book</button>
+      </div>
+    </form>
+  </section>
 {% endblock %}

@@ -1,65 +1,76 @@
 # Library Management System (Flask + MySQL)
 
-This is a beginner-friendly Flask web app that works with your existing MySQL schema (already created via `schema.sql`).
+Beginner-friendly Flask app for library operations with role-based login.
 
-## Folder structure
+## Roles and Features
 
-- `app.py` — Flask routes (books, members, issue, return, fines)
-- `db.py` — MySQL connection helper
-- `config.py` — database + fine configuration (reads env vars)
-- `templates/` — HTML (Jinja2) templates
-- `static/` — CSS
-- `requirements.txt` — Python dependencies
+### Admin
+- Full dashboard and library operations
+- Manage books, members, issues, returns, and fines
+- Reset any student/faculty password
 
-## Prerequisites
+### Faculty and Student
+- Login to personal portal
+- View own dashboard, active issues, and fines
+- Browse catalog
+- Reset own password
 
-- Python 3.10+ recommended
-- MySQL Server running
-- Your database already contains tables:
-  `member_types`, `members`, `books`, `book_copies`, `book_issues`, `fines`
+## Default Credentials
 
-## Configure database connection
+- Admin:
+  - Username: `admin`
+  - Password: `admin123`
 
-The app reads these environment variables:
+- Faculty/Student:
+  - Username pattern: `faculty<member_id>` or `student<member_id>`
+  - Default password: `user123`
 
+Examples:
+- `student1 / user123`
+- `faculty3 / user123`
 
-Example values are in `.env.example`.
+## Project Structure
 
-This project will also auto-load a local `.env` file (if present) on startup.
+- `app.py` - Flask routes and auth logic
+- `db.py` - MySQL connection helper
+- `config.py` - App/database configuration
+- `schema.sql` - Database schema
+- `demodata.sql` - Optional demo data script
+- `templates/` - Jinja templates
+- `static/` - CSS
 
-### Quick way on Windows (PowerShell)
+## Setup
 
-From this project folder:
+1. Create and activate virtual environment.
+2. Install dependencies.
+3. Create MySQL database.
+4. Run `schema.sql`.
+5. (Optional) Run `demodata.sql`.
+6. Configure `.env`.
+7. Start app with `python app.py`.
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+## Required Environment Variables
 
-$env:DB_HOST = "localhost"
-$env:DB_USER = "root"
-$env:DB_PASSWORD = "your_mysql_password"
-$env:DB_NAME = "your_database_name"
+- `DB_HOST`
+- `DB_USER`
+- `DB_PASSWORD`
+- `DB_NAME`
+- `DB_PORT` (default `3306`)
+- `FLASK_SECRET_KEY`
+- `DAILY_FINE_RATE` (default `5`)
 
-If you edit `.env`, stop the server (Ctrl+C) and run `python app.py` again.
-$env:DB_PORT = "3306"
-$env:DAILY_FINE_RATE = "5"
+`.env.example` can be used as template.
 
-python app.py
-```
+## Main Routes
 
-Then open: http://127.0.0.1:5000
-
-## Features / Pages
-
-- **View all books**: `/books`
-- **Add new book** (optionally add accession numbers / copies): `/books/new`
-- **Register new member**: `/members/new`
-- **Issue a book to a member**: `/issue`
-- **Return a book + calculate fine**: `/return`
-- **View all fines and payment status**: `/fines`
-
-## Notes
-
-- Issue rules are enforced using the `member_types` table (`max_active_issues`, `max_issue_days`).
-- Returning a book inserts/updates a row in `fines` only if `days_overdue > 0`.
+- `/login` - Login page
+- `/dashboard` - Admin dashboard
+- `/my/dashboard` - Faculty/Student dashboard
+- `/books` - Catalog
+- `/members` - Admin member management
+- `/issues` - Admin active issues
+- `/return` - Admin returns
+- `/fines` - Admin fines
+- `/my/issues` - Faculty/Student issue view
+- `/my/fines` - Faculty/Student fines view
+- `/reset-password` - Logged-in user password reset

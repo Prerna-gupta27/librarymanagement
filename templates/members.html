@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block content %}
+  <section class="card">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Account Management</p>
+        <h2>Members, Limits, and Borrowing Pressure</h2>
+      </div>
+      <a class="btn btn-secondary" href="{{ url_for('register_member') }}">Register Member</a>
+    </div>
+
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Member</th>
+            <th>Type Policy</th>
+            <th>Contact</th>
+            <th>Login</th>
+            <th>Active Loans</th>
+            <th>Unpaid Fines</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in members %}
+            <tr>
+              <td>#{{ m.member_id }} · {{ m.full_name }}</td>
+              <td>
+                {{ m.type_name }}
+                <div class="small">Limit {{ m.max_active_issues }} books, {{ m.max_issue_days }} days</div>
+              </td>
+              <td>
+                <div>{{ m.email or '-' }}</div>
+                <div class="small">{{ m.phone or '-' }}</div>
+              </td>
+              <td>
+                <div class="member-login">
+                  <div class="member-login-name">{{ m.login_username or '-' }}</div>
+                  {% if m.login_username %}
+                    <form method="post" action="{{ url_for('reset_member_password', member_id=m.member_id) }}" class="member-login-form">
+                      <button type="submit" class="btn btn-muted btn-compact" title="Resets to default password: user123">Reset Pass</button>
+                    </form>
+                  {% endif %}
+                </div>
+              </td>
+              <td>
+                {{ m.active_count }} / {{ m.max_active_issues }}
+                {% if m.active_count >= m.max_active_issues %}
+                  <span class="status-badge status-warn">At limit</span>
+                {% endif %}
+              </td>
+              <td>{{ "%.2f"|format(m.unpaid_total or 0) }}</td>
+              <td>
+                {% if m.is_active %}
+                  <span class="status-badge status-ok">Active</span>
+                {% else %}
+                  <span class="status-badge status-muted">Inactive</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if m.is_active %}
+                  {% if m.active_count > 0 %}
+                    <span class="small">Return open issues first</span>
+                  {% else %}
+                    <form method="post" action="{{ url_for('update_member_status', member_id=m.member_id) }}" class="inline-form">
+                      <input type="hidden" name="action" value="deactivate" />
+                      <button type="submit" class="btn btn-danger">Deactivate</button>
+                    </form>
+                  {% endif %}
+                {% else %}
+                  <form method="post" action="{{ url_for('update_member_status', member_id=m.member_id) }}" class="inline-form">
+                    <input type="hidden" name="action" value="activate" />
+                    <button type="submit" class="btn btn-primary">Activate</button>
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="8"><div class="empty-state">No members found.</div></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}

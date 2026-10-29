@@ -3,7 +3,7 @@
 --
 -- WARNING:
 -- This script CLEARS existing data in these tables:
---   fines, book_issues, book_copies, books, members
+--   fines, book_issues, book_copies, books, user_accounts, members
 -- It does NOT drop or recreate tables.
 
 SET NAMES utf8mb4;
@@ -17,6 +17,7 @@ DELETE FROM fines;
 DELETE FROM book_issues;
 DELETE FROM book_copies;
 DELETE FROM books;
+DELETE FROM user_accounts;
 DELETE FROM members;
 SET FOREIGN_KEY_CHECKS = 1;
 
@@ -25,6 +26,7 @@ ALTER TABLE fines AUTO_INCREMENT = 1;
 ALTER TABLE book_issues AUTO_INCREMENT = 1;
 ALTER TABLE book_copies AUTO_INCREMENT = 1;
 ALTER TABLE books AUTO_INCREMENT = 1;
+ALTER TABLE user_accounts AUTO_INCREMENT = 1;
 ALTER TABLE members AUTO_INCREMENT = 1;
 
 -- Ensure member types exist (schema.sql already inserts these)
@@ -44,6 +46,10 @@ VALUES
   (2, 1, 'Diya Patel',   'diya.student@example.com',  '9990002222', 1),
   (3, 2, 'Prof. Meera Rao', 'meera.faculty@example.com', '9990003333', 1),
   (4, 2, 'Dr. Vikram Singh', 'vikram.faculty@example.com', '9990004444', 1);
+
+-- Login accounts are auto-provisioned by app startup:
+--   Admin: admin / admin123
+--   Students + Faculty: default password user123
 
 -- Books
 INSERT INTO books (book_id, title, author, publisher, isbn, published_year)

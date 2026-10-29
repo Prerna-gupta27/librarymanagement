@@ -1,35 +1,79 @@
 {% extends 'base.html' %}
 {% block content %}
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Fine ID</th>
-        <th>Issue ID</th>
-        <th>Member</th>
-        <th>Book</th>
-        <th>Accession</th>
-        <th>Assessed</th>
-        <th>Days Overdue</th>
-        <th>Amount</th>
-        <th>Paid?</th>
-        <th>Paid Date</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for f in fines %}
-        <tr>
-          <td>{{ f.fine_id }}</td>
-          <td>{{ f.issue_id }}</td>
-          <td>{{ f.full_name }}</td>
-          <td>{{ f.title }} by {{ f.author }}</td>
-          <td>{{ f.accession_no }}</td>
-          <td>{{ f.assessed_date }}</td>
-          <td>{{ f.days_overdue }}</td>
-          <td>{{ f.fine_amount }}</td>
-          <td>{{ 'YES' if f.is_paid else 'NO' }}</td>
-          <td>{{ f.paid_date or '' }}</td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <section class="metrics-grid compact-grid">
+    <article class="card metric-card">
+      <p class="metric-label">Total Fine Records</p>
+      <p class="metric-value">{{ summary.total_fines or 0 }}</p>
+    </article>
+    <article class="card metric-card">
+      <p class="metric-label">Unpaid Fines</p>
+      <p class="metric-value">{{ summary.unpaid_count or 0 }}</p>
+    </article>
+    <article class="card metric-card">
+      <p class="metric-label">Unpaid Amount</p>
+      <p class="metric-value">{{ "%.2f"|format(summary.unpaid_amount or 0) }}</p>
+    </article>
+  </section>
+
+  <section class="card">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Penalty Ledger</p>
+        <h2>Fine Assessment and Settlement</h2>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Fine</th>
+            <th>Issue</th>
+            <th>Member</th>
+            <th>Book / Copy</th>
+            <th>Assessed</th>
+            <th>Overdue Days</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for f in fines %}
+            <tr>
+              <td>#{{ f.fine_id }}</td>
+              <td>#{{ f.issue_id }}</td>
+              <td>{{ f.full_name }}</td>
+              <td>{{ f.title }}<div class="small">{{ f.accession_no }}</div></td>
+              <td>{{ f.assessed_date }}</td>
+              <td>{{ f.days_overdue }}</td>
+              <td>{{ "%.2f"|format(f.fine_amount) }}</td>
+              <td>
+                {% if f.is_paid %}
+                  <span class="status-badge status-ok">Paid {{ f.paid_date }}</span>
+                {% else %}
+                  <span class="status-badge status-danger">Unpaid</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if not f.is_paid %}
+                  <form method="post" action="{{ url_for('pay_fine', fine_id=f.fine_id) }}" class="inline-form">
+                    <button type="submit" class="btn btn-primary">Mark Paid</button>
+                  </form>
+                {% else %}
+                  <span class="small">Settled</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="9">
+                <div class="empty-state">No fines available.</div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
 {% endblock %}
